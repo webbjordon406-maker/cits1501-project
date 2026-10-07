@@ -1,0 +1,4 @@
+# Private files, never track these
+sample.py
+# Operating system junk
+.DS_Store
