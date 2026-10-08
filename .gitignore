@@ -1,5 +1,6 @@
 # Private files, never track these
 sample.py
 __pycache__/
+.pytest_cache/
 # Operating system junk
 .DS_Store

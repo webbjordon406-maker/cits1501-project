@@ -22,7 +22,8 @@ def test_makuru_cold_nights():
 def test_bunuru_hot_days():
     detail = analysis.season_detail(weather, "Bunuru")
     assert detail["events"]["hot_days"] == 14
-    # --- Edge cases ---
+    
+# --- Edge cases ---
 
 def test_summary_with_no_data():
     empty = weather.iloc[0:0]
