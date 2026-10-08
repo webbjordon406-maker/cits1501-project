@@ -2,93 +2,440 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Nyoongar Seasons – Overview</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nyoongar Seasons</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <style>
+    :root {
+      /* Season colour gradient, darkest to lightest */
+      --step-1: #933708;
+      --step-2: #A95607;
+      --step-3: #BE7505;
+      --step-4: #D49504;
+      --step-5: #EEAA0D;
+      --step-6: #FFC40C;
+
+      --ink: #3B2410;
+      --ink-soft: #6E5640;
+      --line: #E6DCCF;
+      --page: #FFFFFF;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font-family: "Libre Franklin", "Helvetica Neue", Arial, sans-serif;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem 1.25rem;
+      padding: 1rem clamp(1rem, 4vw, 3rem);
+      border-bottom: 1px solid var(--line);
+    }
+    nav a {
+      color: var(--ink);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    nav a:hover { text-decoration: underline; }
+    nav a[aria-current="page"] { font-weight: 800; }
+
+    main {
+      max-width: 72rem;
+      margin: 0 auto;
+      padding: 0 clamp(1rem, 4vw, 3rem) 4rem;
+    }
+
+    a:focus-visible {
+      outline: 3px solid var(--step-1);
+      outline-offset: 3px;
+    }
+
+    /* --- Hero: introduction beside the season wheel --- */
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+      gap: 3rem;
+      align-items: center;
+      padding: 3rem 0 2rem;
+    }
+    h1 {
+      font-size: clamp(2.5rem, 6vw, 4.25rem);
+      font-weight: 800;
+      line-height: 1.02;
+      letter-spacing: -0.02em;
+      margin: 0 0 1.5rem;
+    }
+    .intro { max-width: 34rem; }
+    .intro p { margin: 0 0 1rem; }
+    .note {
+      font-size: 0.9rem;
+      color: var(--ink-soft);
+      border-left: 3px solid var(--step-5);
+      padding-left: 0.9rem;
+    }
+
+    /* --- Season wheel --- */
+    .wheel-wrap { text-align: center; }
+    #wheel {
+      width: 100%;
+      max-width: 34rem;
+      height: auto;
+      overflow: visible;
+    }
+    .wedge path {
+      stroke: var(--page);
+      stroke-width: 3;
+      transition: transform 0.2s ease;
+      transform-origin: 250px 250px;
+    }
+    .wedge:hover path,
+    .wedge:focus path {
+      transform: scale(1.04);
+    }
+    .wedge:focus { outline: none; }
+    .wedge:focus-visible path {
+      stroke: var(--ink);
+      stroke-width: 4;
+    }
+    .wedge-name {
+      font-size: 19px;
+      font-weight: 700;
+      pointer-events: none;
+    }
+    .wedge-months {
+      font-size: 12px;
+      pointer-events: none;
+    }
+    .centre-name {
+      font-size: 24px;
+      font-weight: 800;
+      fill: var(--ink);
+    }
+    .centre-detail {
+      font-size: 13px;
+      fill: var(--ink-soft);
+    }
+    .key {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.85rem;
+      color: var(--ink-soft);
+      margin-top: 0.5rem;
+    }
+    .key-bar {
+      width: 8rem;
+      height: 0.6rem;
+      border-radius: 0.3rem;
+      background: linear-gradient(to right,
+        var(--step-1), var(--step-2), var(--step-3),
+        var(--step-4), var(--step-5), var(--step-6));
+    }
+
+    /* --- Data sections --- */
+    section { margin-top: 3.5rem; }
+    h2 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      margin: 0 0 0.4rem;
+    }
+    .section-lede {
+      color: var(--ink-soft);
+      margin: 0 0 1.25rem;
+      max-width: 44rem;
+    }
+
+    .table-scroll { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-variant-numeric: tabular-nums;
+    }
+    th, td {
+      padding: 0.6rem 0.75rem;
+      border-bottom: 1px solid var(--line);
+      text-align: right;
+      white-space: nowrap;
+    }
+    th:first-child, td:first-child { text-align: left; }
+    thead th {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--ink-soft);
+      border-bottom: 2px solid var(--ink);
+      vertical-align: bottom;
+    }
+    td a {
+      color: var(--ink);
+      font-weight: 700;
+      text-decoration: none;
+    }
+    td a:hover { text-decoration: underline; }
+    .swatch {
+      display: inline-block;
+      width: 0.7rem;
+      height: 0.7rem;
+      border-radius: 50%;
+      margin-right: 0.5rem;
+      vertical-align: baseline;
+    }
+
+    #events-chart { width: 100%; min-height: 420px; }
+
+    .sources ul { padding-left: 1.2rem; }
+    .sources li { margin-bottom: 0.4rem; }
+
+    #message { color: var(--step-1); font-weight: 700; }
+
+    @media (max-width: 800px) {
+      .hero {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        padding-top: 2rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .wedge path { transition: none; }
+    }
+  </style>
 </head>
 <body>
   <nav>
-    <a href="/">Home</a> |
-    <a href="/season/Birak">Birak</a> |
-    <a href="/season/Bunuru">Bunuru</a> |
-    <a href="/season/Djeran">Djeran</a> |
-    <a href="/season/Makuru">Makuru</a> |
-    <a href="/season/Djilba">Djilba</a> |
+    <a href="/" aria-current="page">Home</a>
+    <a href="/season/Birak">Birak</a>
+    <a href="/season/Bunuru">Bunuru</a>
+    <a href="/season/Djeran">Djeran</a>
+    <a href="/season/Makuru">Makuru</a>
+    <a href="/season/Djilba">Djilba</a>
     <a href="/season/Kambarang">Kambarang</a>
   </nav>
 
-  <h1>Nyoongar Seasons</h1>
-  <p id="overview"></p>
-  <p><strong>Note:</strong> <span id="note"></span></p>
+  <main>
+    <div class="hero">
+      <div class="intro">
+        <h1>Nyoongar Seasons</h1>
+        <p id="overview"></p>
+        <p class="note"><strong>Note:</strong> <span id="note"></span></p>
+      </div>
 
-  <h2>The six seasons</h2>
-  <ul id="season-list"></ul>
+      <div class="wheel-wrap">
+        <svg id="wheel" viewBox="0 0 500 500" role="img"
+             aria-label="The six Nyoongar seasons arranged in a circle. Select a season to see its details.">
+        </svg>
+        <div class="key">
+          <span>Cooler</span><span class="key-bar"></span><span>Warmer</span>
+        </div>
+      </div>
+    </div>
 
-  <h2>Season summary</h2>
-  <p>Daily weather, October 2025 – September 2026 (Perth Metro and Perth Airport, Bureau of Meteorology).</p>
-  <table id="summary" border="1">
-    <thead>
-      <tr>
-        <th>Season</th><th>Days</th><th>Mean min (°C)</th><th>Mean max (°C)</th>
-        <th>Total rain (mm)</th><th>Mean sun (hrs)</th><th>3pm humidity (%)</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+    <p id="message"></p>
 
-  <h2>Weather events</h2>
-  <table id="events" border="1">
-    <thead>
-      <tr>
-        <th>Season</th><th>Hot days (≥35°C)</th><th>Extreme heat (≥40°C)</th>
-        <th>Cold nights (≤5°C)</th><th>Rain days (≥1mm)</th><th>Heavy rain (≥10mm)</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+    <section>
+      <h2>Season summary</h2>
+      <p class="section-lede">
+        Daily weather from October 2025 to September 2026, grouped by season.
+        Temperatures, sunshine and humidity are averages; rainfall is the season total.
+      </p>
+      <div class="table-scroll">
+        <table id="summary">
+          <thead>
+            <tr>
+              <th>Season</th><th>Days</th><th>Mean min (°C)</th><th>Mean max (°C)</th>
+              <th>Total rain (mm)</th><th>Mean sun (hrs)</th><th>3pm humidity (%)</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
 
-  <p id="message"></p>
+    <section>
+      <h2>Weather events by season</h2>
+      <p class="section-lede">Number of days in each season that crossed each threshold.</p>
+      <div id="events-chart"></div>
+    </section>
 
-  <h2>Sources</h2>
-  <ul>
-    <li>Season information: <a href="https://www.bom.gov.au/resources/indigenous-weather-knowledge/indigenous-seasonal-calendars/nyoongar-calendar"></a>https://www.bom.gov.au/resources/indigenous-weather-knowledge/indigenous-seasonal-calendars/nyoongar-calendar</a></li>
-    <li>Weather data: Bureau of Meteorology, Daily Weather Observations, Perth, Western Australia</li>
-  </ul>
+    <section class="sources">
+      <h2>Sources</h2>
+      <ul>
+        <li>Season information: [add your sources here]</li>
+        <li>Weather data: Bureau of Meteorology, Daily Weather Observations, Perth, Western Australia
+          (Perth Metro and Perth Airport stations).</li>
+      </ul>
+    </section>
+  </main>
 
   <script>
+    const GRADIENT = ["#933708", "#A95607", "#BE7505", "#D49504", "#EEAA0D", "#FFC40C"];
+    // The two darkest steps need white text; the rest read better with dark text
+    const TEXT_ON = ["#FFFFFF", "#FFFFFF", "#2B1606", "#2B1606", "#2B1606", "#2B1606"];
+    const SVG_NS = "http://www.w3.org/2000/svg";
+
+    // Give each season a gradient step by its mean max temperature:
+    // the coolest season gets the darkest colour, the warmest the lightest.
+    function colourBySeason(summary) {
+      const ranked = [...summary].sort((a, b) => a.mean_max_temp - b.mean_max_temp);
+      const colours = {};
+      ranked.forEach((row, i) => {
+        colours[row.season] = { fill: GRADIENT[i], text: TEXT_ON[i] };
+      });
+      return colours;
+    }
+
+    // A point on a circle, with 0 degrees at the top and angles going clockwise
+    function point(cx, cy, r, degrees) {
+      const radians = (degrees - 90) * Math.PI / 180;
+      return [cx + r * Math.cos(radians), cy + r * Math.sin(radians)];
+    }
+
+    // SVG path for one ring-shaped wedge between two angles
+    function wedgePath(cx, cy, rOuter, rInner, start, end) {
+      const [x1, y1] = point(cx, cy, rOuter, start);
+      const [x2, y2] = point(cx, cy, rOuter, end);
+      const [x3, y3] = point(cx, cy, rInner, end);
+      const [x4, y4] = point(cx, cy, rInner, start);
+      return `M ${x1} ${y1} A ${rOuter} ${rOuter} 0 0 1 ${x2} ${y2}
+              L ${x3} ${y3} A ${rInner} ${rInner} 0 0 0 ${x4} ${y4} Z`;
+    }
+
+    function makeText(x, y, className, content, fill) {
+      const t = document.createElementNS(SVG_NS, "text");
+      t.setAttribute("x", x);
+      t.setAttribute("y", y);
+      t.setAttribute("text-anchor", "middle");
+      t.setAttribute("class", className);
+      if (fill) t.setAttribute("fill", fill);
+      t.textContent = content;
+      return t;
+    }
+
+    function drawWheel(seasons, info, colours) {
+      const svg = document.querySelector("#wheel");
+      const cx = 250, cy = 250, rOuter = 235, rInner = 105;
+      const step = 360 / seasons.length;
+
+      // Centre text changes when a season is hovered or focused
+      const centreName = makeText(cx, cy - 4, "centre-name", "Six seasons");
+      const centreDetail = makeText(cx, cy + 20, "centre-detail", "Select a season");
+      svg.append(centreName, centreDetail);
+
+      seasons.forEach((season, i) => {
+        // Birak is centred at the top; the rest follow clockwise
+        const start = i * step - step / 2;
+        const end = start + step;
+        const middle = start + step / 2;
+
+        const link = document.createElementNS(SVG_NS, "a");
+        link.setAttribute("href", `/season/${season}`);
+        link.setAttribute("class", "wedge");
+        link.setAttribute("aria-label", `${season}, ${info[season].months}`);
+
+        const path = document.createElementNS(SVG_NS, "path");
+        path.setAttribute("d", wedgePath(cx, cy, rOuter, rInner, start, end));
+        path.setAttribute("fill", colours[season].fill);
+
+        const [lx, ly] = point(cx, cy, (rOuter + rInner) / 2, middle);
+        const name = makeText(lx, ly, "wedge-name", season, colours[season].text);
+        const months = makeText(lx, ly + 18, "wedge-months", info[season].months, colours[season].text);
+
+        link.append(path, name, months);
+        svg.append(link);
+
+        const show = () => {
+          centreName.textContent = season;
+          centreDetail.textContent = info[season].description;
+        };
+        const reset = () => {
+          centreName.textContent = "Six seasons";
+          centreDetail.textContent = "Select a season";
+        };
+        link.addEventListener("mouseenter", show);
+        link.addEventListener("focus", show);
+        link.addEventListener("mouseleave", reset);
+        link.addEventListener("blur", reset);
+      });
+    }
+
+    // Always show one decimal place, e.g. 31.0 rather than 31
+    function oneDecimal(value) {
+      return value === null ? "–" : value.toFixed(1);
+    }
+
+    function fillSummaryTable(summary, colours) {
+      const body = document.querySelector("#summary tbody");
+      for (const row of summary) {
+        body.innerHTML += `<tr>
+          <td><span class="swatch" style="background:${colours[row.season].fill}"></span><a href="/season/${row.season}">${row.season}</a></td>
+          <td>${row.days}</td>
+          <td>${oneDecimal(row.mean_min_temp)}</td><td>${oneDecimal(row.mean_max_temp)}</td>
+          <td>${oneDecimal(row.total_rain)}</td><td>${oneDecimal(row.mean_sun)}</td>
+          <td>${oneDecimal(row.mean_rh_3pm)}</td>
+        </tr>`;
+      }
+    }
+
+    function drawEventsChart(seasons, events) {
+      const eventTypes = [
+        { key: "hot_days",          label: "Hot days (≥35°C)",     colour: "#EEAA0D" },
+        { key: "extreme_heat_days", label: "Extreme heat (≥40°C)", colour: "#933708" },
+        { key: "cold_nights",       label: "Cold nights (≤5°C)",   colour: "#8A9BA6" },
+        { key: "rain_days",         label: "Rain days (≥1 mm)",    colour: "#6F97AE" },
+        { key: "heavy_rain_days",   label: "Heavy rain (≥10 mm)",  colour: "#2F5D73" },
+      ];
+
+      const traces = eventTypes.map(type => ({
+        type: "bar",
+        name: type.label,
+        x: seasons,
+        y: seasons.map(s => events[s][type.key]),
+        marker: { color: type.colour },
+        hovertemplate: "%{x}: %{y} days<extra>" + type.label + "</extra>",
+      }));
+
+      const layout = {
+        barmode: "group",
+        font: { family: "Libre Franklin, Arial, sans-serif", color: "#3B2410" },
+        margin: { t: 10, r: 10, b: 60, l: 50 },
+        yaxis: { title: { text: "Days" }, gridcolor: "#E6DCCF", rangemode: "tozero" },
+        xaxis: { tickfont: { size: 14 }, automargin: true },
+        legend: { orientation: "h", y: -0.18 },
+        paper_bgcolor: "rgba(0,0,0,0)",
+        plot_bgcolor: "rgba(0,0,0,0)",
+      };
+
+      Plotly.newPlot("events-chart", traces, layout, { responsive: true, displayModeBar: false });
+    }
+
     fetch("/api/summary")
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) throw new Error("Request failed");
+        return response.json();
+      })
       .then(data => {
         document.querySelector("#overview").textContent = data.overview;
         document.querySelector("#note").textContent = data.note;
 
-        const list = document.querySelector("#season-list");
-        for (const season of data.seasons) {
-          const info = data.info[season];
-          list.innerHTML += `<li>
-            <a href="/season/${season}">${season}</a>
-            (${info.months}): ${info.description}
-          </li>`;
-        }
-
-        const summaryBody = document.querySelector("#summary tbody");
-        for (const row of data.summary) {
-          summaryBody.innerHTML += `<tr>
-            <td><a href="/season/${row.season}">${row.season}</a></td>
-            <td>${row.days}</td><td>${row.mean_min_temp}</td><td>${row.mean_max_temp}</td>
-            <td>${row.total_rain}</td><td>${row.mean_sun}</td><td>${row.mean_rh_3pm}</td>
-          </tr>`;
-        }
-
-        const eventsBody = document.querySelector("#events tbody");
-        for (const season of data.seasons) {
-          const e = data.events[season];
-          eventsBody.innerHTML += `<tr>
-            <td>${season}</td><td>${e.hot_days}</td><td>${e.extreme_heat_days}</td>
-            <td>${e.cold_nights}</td><td>${e.rain_days}</td><td>${e.heavy_rain_days}</td>
-          </tr>`;
-        }
+        const colours = colourBySeason(data.summary);
+        drawWheel(data.seasons, data.info, colours);
+        fillSummaryTable(data.summary, colours);
+        drawEventsChart(data.seasons, data.events);
       })
       .catch(() => {
-        document.querySelector("#message").textContent = "Sorry, the data could not be loaded.";
+        document.querySelector("#message").textContent =
+          "The season data could not be loaded. Check that the Flask app is running, then refresh the page.";
       });
   </script>
 </body>

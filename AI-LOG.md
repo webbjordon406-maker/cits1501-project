@@ -10,3 +10,12 @@
 
 #Use 3
     Generated code to run neccessary analysis on the data per season
+
+#Use 4
+    write code that makes a bar chart of the 6 seasons and their season detail. Have the x-axis be the season, y-axis be the count and have one bar per event. using appropriate colours.
+
+#Use 5
+    code used to build the structure and code for the visualisation app. This includes app.py that has the python code, and error.html/index.html/season.html that contain what is visualised on each screen. Note that all information about the seasons and overview of the calendar were gathered via research and not AI generated - AI was only used to import this research into usable code. 
+
+#Use 6
+    AI was used to help improve the visual style of the homepage. Design choices and layout were described to the chat which gave the neccessary code to acheive this. 
