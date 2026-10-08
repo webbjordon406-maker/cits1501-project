@@ -1,4 +1,5 @@
 # Private files, never track these
 sample.py
+__pycache__/
 # Operating system junk
 .DS_Store
