@@ -1,17 +1,18 @@
-# Flask application for Noongar Seasons website
+"""Flask app for the Nyoongar seasonal weather explorer."""
 from pathlib import Path
 
 import pandas as pd
 from flask import Flask, jsonify, send_file
 
-from data import SEASONS, load_weather, assign_seasons
+from data import SEASONS, load_weather, assign_seasons, load_season_info
 from analysis import season_summary, season_detail
 
 app = Flask(__name__)
 PAGES = Path(__file__).parent / "templates"
 
-# Load and prepare the data once, when the app starts
+# Load and prepare the data and season descriptions once, when the app starts
 weather = assign_seasons(load_weather())
+season_info = load_season_info()
 
 
 # --- Helpers ---
@@ -67,7 +68,14 @@ def page_not_found(error):
 def api_summary():
     summary = season_summary(weather).reset_index()
     events = {s: season_detail(weather, s)["events"] for s in SEASONS}
-    return jsonify(seasons=SEASONS, summary=to_records(summary), events=events)
+    return jsonify(
+        overview=season_info["overview"],
+        note=season_info["note"],
+        seasons=SEASONS,
+        info=season_info["seasons"],
+        summary=to_records(summary),
+        events=events,
+    )
 
 
 @app.route("/api/season/<name>")
@@ -79,6 +87,7 @@ def api_season(name):
     detail = season_detail(weather, season)
     return jsonify(
         name=detail["name"],
+        info=season_info["seasons"][season],
         stats=detail["stats"],
         events=detail["events"],
         daily=to_records(detail["daily"]),

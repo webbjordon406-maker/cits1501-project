@@ -1,6 +1,7 @@
 # Import necessary libraries
 import pandas as pd
 from pathlib import Path
+import json
 
 DATA_FILE = Path(__file__).parent / "CITS1501 Data csv.csv"
 
@@ -79,7 +80,25 @@ def assign_seasons(df):
 
     # 4. Return the DataFrame with the new column
     return df
+import json
 
+INFO_FILE = Path(__file__).parent / "seasons.json"
+
+
+def load_season_info(path=INFO_FILE):
+    """Read the season descriptions from seasons.json. Return a dict."""
+    path = Path(path)
+    if not path.exists():
+        raise FileNotFoundError(f"Season information file not found: {path}")
+
+    with open(path, encoding="utf-8") as f:
+        info = json.load(f)
+
+    # Every season in SEASONS must have a description, and no extras
+    if set(info["seasons"]) != set(SEASONS):
+        raise ValueError(f"seasons.json must describe exactly these seasons: {SEASONS}")
+
+    return info
 
 if __name__ == "__main__":
     weather = assign_seasons(load_weather())

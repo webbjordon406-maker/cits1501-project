@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Noongar Seasons – Season</title>
+  <title>Nyoongar Seasons – Season</title>
 </head>
 <body>
   <nav>
@@ -16,6 +16,9 @@
   </nav>
 
   <h1 id="title">Loading…</h1>
+  <p><strong id="description"></strong></p>
+  <p>Months: <span id="months"></span></p>
+  <p id="season-overview"></p>
 
   <h2>Statistics</h2>
   <ul id="stats"></ul>
@@ -36,7 +39,11 @@
       })
       .then(data => {
         document.querySelector("#title").textContent = data.name;
-        document.title = `Noongar Seasons – ${data.name}`;
+        document.title = `Nyoongar Seasons – ${data.name}`;
+
+        document.querySelector("#description").textContent = data.info.description;
+        document.querySelector("#months").textContent = data.info.months;
+        document.querySelector("#season-overview").textContent = data.info.overview;
 
         const s = data.stats;
         document.querySelector("#stats").innerHTML = `

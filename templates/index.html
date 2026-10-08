@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Noongar Seasons – Overview</title>
+  <title>Nyoongar Seasons – Overview</title>
 </head>
 <body>
   <nav>
@@ -15,10 +15,15 @@
     <a href="/season/Kambarang">Kambarang</a>
   </nav>
 
-  <h1>Noongar Seasons in Perth</h1>
-  <p>Daily weather, October 2025 – September 2026, grouped by Noongar seasons.</p>
+  <h1>Nyoongar Seasons</h1>
+  <p id="overview"></p>
+  <p><strong>Note:</strong> <span id="note"></span></p>
+
+  <h2>The six seasons</h2>
+  <ul id="season-list"></ul>
 
   <h2>Season summary</h2>
+  <p>Daily weather, October 2025 – September 2026 (Perth Metro and Perth Airport, Bureau of Meteorology).</p>
   <table id="summary" border="1">
     <thead>
       <tr>
@@ -42,10 +47,28 @@
 
   <p id="message"></p>
 
+  <h2>Sources</h2>
+  <ul>
+    <li>Season information: <a href="https://www.bom.gov.au/resources/indigenous-weather-knowledge/indigenous-seasonal-calendars/nyoongar-calendar"></a>https://www.bom.gov.au/resources/indigenous-weather-knowledge/indigenous-seasonal-calendars/nyoongar-calendar</a></li>
+    <li>Weather data: Bureau of Meteorology, Daily Weather Observations, Perth, Western Australia</li>
+  </ul>
+
   <script>
     fetch("/api/summary")
       .then(response => response.json())
       .then(data => {
+        document.querySelector("#overview").textContent = data.overview;
+        document.querySelector("#note").textContent = data.note;
+
+        const list = document.querySelector("#season-list");
+        for (const season of data.seasons) {
+          const info = data.info[season];
+          list.innerHTML += `<li>
+            <a href="/season/${season}">${season}</a>
+            (${info.months}): ${info.description}
+          </li>`;
+        }
+
         const summaryBody = document.querySelector("#summary tbody");
         for (const row of data.summary) {
           summaryBody.innerHTML += `<tr>
