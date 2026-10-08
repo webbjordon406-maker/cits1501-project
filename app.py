@@ -92,7 +92,13 @@ def api_season(name):
         events=detail["events"],
         daily=to_records(detail["daily"]),
     )
-
+@app.route("/api/daily")
+def api_daily():
+    """Every day of the year, with its season, for the year-long chart."""
+    columns = ["date", "min_temp", "max_temp", "rain", "season"]
+    daily = weather[columns].copy()
+    daily["season"] = daily["season"].astype(str)
+    return jsonify(daily=to_records(daily))
 
 if __name__ == "__main__":
     app.run(debug=True)

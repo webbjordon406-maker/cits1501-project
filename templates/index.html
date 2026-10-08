@@ -8,209 +8,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
-  <style>
-    :root {
-      /* Season colour gradient, darkest to lightest */
-      --step-1: #933708;
-      --step-2: #A95607;
-      --step-3: #BE7505;
-      --step-4: #D49504;
-      --step-5: #EEAA0D;
-      --step-6: #FFC40C;
-
-      --ink: #3B2410;
-      --ink-soft: #6E5640;
-      --line: #E6DCCF;
-      --page: #FFFFFF;
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      background: var(--page);
-      color: var(--ink);
-      font-family: "Libre Franklin", "Helvetica Neue", Arial, sans-serif;
-      font-size: 1rem;
-      line-height: 1.6;
-    }
-
-    nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.25rem 1.25rem;
-      padding: 1rem clamp(1rem, 4vw, 3rem);
-      border-bottom: 1px solid var(--line);
-    }
-    nav a {
-      color: var(--ink);
-      text-decoration: none;
-      font-weight: 500;
-    }
-    nav a:hover { text-decoration: underline; }
-    nav a[aria-current="page"] { font-weight: 800; }
-
-    main {
-      max-width: 72rem;
-      margin: 0 auto;
-      padding: 0 clamp(1rem, 4vw, 3rem) 4rem;
-    }
-
-    a:focus-visible {
-      outline: 3px solid var(--step-1);
-      outline-offset: 3px;
-    }
-
-    /* --- Hero: introduction beside the season wheel --- */
-    .hero {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
-      gap: 3rem;
-      align-items: center;
-      padding: 3rem 0 2rem;
-    }
-    h1 {
-      font-size: clamp(2.5rem, 6vw, 4.25rem);
-      font-weight: 800;
-      line-height: 1.02;
-      letter-spacing: -0.02em;
-      margin: 0 0 1.5rem;
-    }
-    .intro { max-width: 34rem; }
-    .intro p { margin: 0 0 1rem; }
-    .note {
-      font-size: 0.9rem;
-      color: var(--ink-soft);
-      border-left: 3px solid var(--step-5);
-      padding-left: 0.9rem;
-    }
-
-    /* --- Season wheel --- */
-    .wheel-wrap { text-align: center; }
-    #wheel {
-      width: 100%;
-      max-width: 34rem;
-      height: auto;
-      overflow: visible;
-    }
-    .wedge path {
-      stroke: var(--page);
-      stroke-width: 3;
-      transition: transform 0.2s ease;
-      transform-origin: 250px 250px;
-    }
-    .wedge:hover path,
-    .wedge:focus path {
-      transform: scale(1.04);
-    }
-    .wedge:focus { outline: none; }
-    .wedge:focus-visible path {
-      stroke: var(--ink);
-      stroke-width: 4;
-    }
-    .wedge-name {
-      font-size: 19px;
-      font-weight: 700;
-      pointer-events: none;
-    }
-    .wedge-months {
-      font-size: 12px;
-      pointer-events: none;
-    }
-    .centre-name {
-      font-size: 24px;
-      font-weight: 800;
-      fill: var(--ink);
-    }
-    .centre-detail {
-      font-size: 13px;
-      fill: var(--ink-soft);
-    }
-    .key {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.6rem;
-      font-size: 0.85rem;
-      color: var(--ink-soft);
-      margin-top: 0.5rem;
-    }
-    .key-bar {
-      width: 8rem;
-      height: 0.6rem;
-      border-radius: 0.3rem;
-      background: linear-gradient(to right,
-        var(--step-1), var(--step-2), var(--step-3),
-        var(--step-4), var(--step-5), var(--step-6));
-    }
-
-    /* --- Data sections --- */
-    section { margin-top: 3.5rem; }
-    h2 {
-      font-size: 1.6rem;
-      font-weight: 800;
-      letter-spacing: -0.01em;
-      margin: 0 0 0.4rem;
-    }
-    .section-lede {
-      color: var(--ink-soft);
-      margin: 0 0 1.25rem;
-      max-width: 44rem;
-    }
-
-    .table-scroll { overflow-x: auto; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-variant-numeric: tabular-nums;
-    }
-    th, td {
-      padding: 0.6rem 0.75rem;
-      border-bottom: 1px solid var(--line);
-      text-align: right;
-      white-space: nowrap;
-    }
-    th:first-child, td:first-child { text-align: left; }
-    thead th {
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: var(--ink-soft);
-      border-bottom: 2px solid var(--ink);
-      vertical-align: bottom;
-    }
-    td a {
-      color: var(--ink);
-      font-weight: 700;
-      text-decoration: none;
-    }
-    td a:hover { text-decoration: underline; }
-    .swatch {
-      display: inline-block;
-      width: 0.7rem;
-      height: 0.7rem;
-      border-radius: 50%;
-      margin-right: 0.5rem;
-      vertical-align: baseline;
-    }
-
-    #events-chart { width: 100%; min-height: 420px; }
-
-    .sources ul { padding-left: 1.2rem; }
-    .sources li { margin-bottom: 0.4rem; }
-
-    #message { color: var(--step-1); font-weight: 700; }
-
-    @media (max-width: 800px) {
-      .hero {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-        padding-top: 2rem;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .wedge path { transition: none; }
-    }
-  </style>
+  <script src="/static/seasons.js"></script>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
   <nav>
@@ -265,7 +64,7 @@
     <section>
       <h2>Weather events by season</h2>
       <p class="section-lede">Number of days in each season that crossed each threshold.</p>
-      <div id="events-chart"></div>
+      <div id="events-chart" class="chart"></div>
     </section>
 
     <section class="sources">
@@ -279,21 +78,7 @@
   </main>
 
   <script>
-    const GRADIENT = ["#933708", "#A95607", "#BE7505", "#D49504", "#EEAA0D", "#FFC40C"];
-    // The two darkest steps need white text; the rest read better with dark text
-    const TEXT_ON = ["#FFFFFF", "#FFFFFF", "#2B1606", "#2B1606", "#2B1606", "#2B1606"];
     const SVG_NS = "http://www.w3.org/2000/svg";
-
-    // Give each season a gradient step by its mean max temperature:
-    // the coolest season gets the darkest colour, the warmest the lightest.
-    function colourBySeason(summary) {
-      const ranked = [...summary].sort((a, b) => a.mean_max_temp - b.mean_max_temp);
-      const colours = {};
-      ranked.forEach((row, i) => {
-        colours[row.season] = { fill: GRADIENT[i], text: TEXT_ON[i] };
-      });
-      return colours;
-    }
 
     // A point on a circle, with 0 degrees at the top and angles going clockwise
     function point(cx, cy, r, degrees) {
@@ -369,11 +154,6 @@
       });
     }
 
-    // Always show one decimal place, e.g. 31.0 rather than 31
-    function oneDecimal(value) {
-      return value === null ? "–" : value.toFixed(1);
-    }
-
     function fillSummaryTable(summary, colours) {
       const body = document.querySelector("#summary tbody");
       for (const row of summary) {
@@ -407,7 +187,7 @@
 
       const layout = {
         barmode: "group",
-        font: { family: "Libre Franklin, Arial, sans-serif", color: "#3B2410" },
+        font: CHART_FONT,
         margin: { t: 10, r: 10, b: 60, l: 50 },
         yaxis: { title: { text: "Days" }, gridcolor: "#E6DCCF", rangemode: "tozero" },
         xaxis: { tickfont: { size: 14 }, automargin: true },
@@ -419,11 +199,7 @@
       Plotly.newPlot("events-chart", traces, layout, { responsive: true, displayModeBar: false });
     }
 
-    fetch("/api/summary")
-      .then(response => {
-        if (!response.ok) throw new Error("Request failed");
-        return response.json();
-      })
+    getJSON("/api/summary")
       .then(data => {
         document.querySelector("#overview").textContent = data.overview;
         document.querySelector("#note").textContent = data.note;

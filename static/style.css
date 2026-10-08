@@ -1,0 +1,257 @@
+/* Shared styles for every page of the Nyoongar Seasons app */
+
+:root {
+  /* Season colour gradient, darkest (coolest) to lightest (warmest) */
+  --step-1: #933708;
+  --step-2: #A95607;
+  --step-3: #BE7505;
+  --step-4: #D49504;
+  --step-5: #EEAA0D;
+  --step-6: #FFC40C;
+
+  --ink: #3B2410;
+  --ink-soft: #6E5640;
+  --line: #E6DCCF;
+  --page: #FFFFFF;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font-family: "Libre Franklin", "Helvetica Neue", Arial, sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* --- Navigation --- */
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  padding: 1rem clamp(1rem, 4vw, 3rem);
+  border-bottom: 1px solid var(--line);
+}
+nav a {
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 500;
+}
+nav a:hover { text-decoration: underline; }
+nav a[aria-current="page"] { font-weight: 800; }
+
+a:focus-visible {
+  outline: 3px solid var(--step-1);
+  outline-offset: 3px;
+}
+
+main {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 clamp(1rem, 4vw, 3rem) 4rem;
+}
+
+/* --- Headings and text --- */
+h1 {
+  font-size: clamp(2.5rem, 6vw, 4.25rem);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  margin: 0 0 1.5rem;
+}
+h2 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.4rem;
+}
+section { margin-top: 3.5rem; }
+.section-lede {
+  color: var(--ink-soft);
+  margin: 0 0 1.25rem;
+  max-width: 44rem;
+}
+.note {
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  border-left: 3px solid var(--step-5);
+  padding-left: 0.9rem;
+}
+#message { color: var(--step-1); font-weight: 700; }
+
+/* --- Tables --- */
+.table-scroll { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+th, td {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+  white-space: nowrap;
+}
+th:first-child, td:first-child { text-align: left; }
+thead th {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  border-bottom: 2px solid var(--ink);
+  vertical-align: bottom;
+}
+td a {
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: none;
+}
+td a:hover { text-decoration: underline; }
+.swatch {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+  vertical-align: baseline;
+}
+tr.group-start td { border-top: 2px solid var(--ink); }
+
+/* --- Home page: introduction beside the season wheel --- */
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 3rem;
+  align-items: center;
+  padding: 3rem 0 2rem;
+}
+.intro { max-width: 34rem; }
+.intro p { margin: 0 0 1rem; }
+
+.wheel-wrap { text-align: center; }
+#wheel {
+  width: 100%;
+  max-width: 34rem;
+  height: auto;
+  overflow: visible;
+}
+.wedge path {
+  stroke: var(--page);
+  stroke-width: 3;
+  transition: transform 0.2s ease;
+  transform-origin: 250px 250px;
+}
+.wedge:hover path,
+.wedge:focus path { transform: scale(1.04); }
+.wedge:focus { outline: none; }
+.wedge:focus-visible path {
+  stroke: var(--ink);
+  stroke-width: 4;
+}
+.wedge-name {
+  font-size: 19px;
+  font-weight: 700;
+  pointer-events: none;
+}
+.wedge-months {
+  font-size: 12px;
+  pointer-events: none;
+}
+.centre-name {
+  font-size: 24px;
+  font-weight: 800;
+  fill: var(--ink);
+}
+.centre-detail {
+  font-size: 13px;
+  fill: var(--ink-soft);
+}
+.key {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  margin-top: 0.5rem;
+}
+.key-bar {
+  width: 8rem;
+  height: 0.6rem;
+  border-radius: 0.3rem;
+  background: linear-gradient(to right,
+    var(--step-1), var(--step-2), var(--step-3),
+    var(--step-4), var(--step-5), var(--step-6));
+}
+
+.chart { width: 100%; min-height: 420px; }
+
+.sources ul { padding-left: 1.2rem; }
+.sources li { margin-bottom: 0.4rem; }
+
+/* --- Season page --- */
+.season-header {
+  padding: 3rem 0 0;
+  max-width: 46rem;
+}
+.season-header h1 { margin-bottom: 0.75rem; }
+.season-band {
+  display: block;
+  width: 5rem;
+  height: 0.5rem;
+  border-radius: 0.25rem;
+  margin-bottom: 1.25rem;
+  background: var(--season-colour, var(--step-5));
+}
+.season-meta {
+  font-size: 1.15rem;
+  margin: 0 0 1rem;
+}
+.season-meta strong { font-weight: 700; }
+.season-overview { margin: 0; }
+
+.summary-table { max-width: 34rem; }
+
+/* Overrides the top navigation styles, since this is also a <nav> */
+.cycle-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 3.5rem;
+  padding: 1.25rem 0 0;
+  border-top: 1px solid var(--line);
+  border-bottom: none;
+}
+.cycle-nav a {
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: none;
+}
+.cycle-nav a:hover { text-decoration: underline; }
+.cycle-nav span {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--ink-soft);
+}
+.cycle-nav .next { text-align: right; }
+
+/* --- Error page --- */
+.error-page { padding-top: 3rem; max-width: 40rem; }
+.error-page ul { padding-left: 1.2rem; }
+.error-page a { color: var(--ink); font-weight: 700; }
+
+/* --- Small screens and reduced motion --- */
+@media (max-width: 800px) {
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding-top: 2rem;
+  }
+  .season-header { padding-top: 2rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wedge path { transition: none; }
+}

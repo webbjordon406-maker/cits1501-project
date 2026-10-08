@@ -1,70 +1,204 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Nyoongar Seasons – Season</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nyoongar Seasons</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <script src="/static/seasons.js"></script>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
   <nav>
-    <a href="/">Home</a> |
-    <a href="/season/Birak">Birak</a> |
-    <a href="/season/Bunuru">Bunuru</a> |
-    <a href="/season/Djeran">Djeran</a> |
-    <a href="/season/Makuru">Makuru</a> |
-    <a href="/season/Djilba">Djilba</a> |
+    <a href="/">Home</a>
+    <a href="/season/Birak">Birak</a>
+    <a href="/season/Bunuru">Bunuru</a>
+    <a href="/season/Djeran">Djeran</a>
+    <a href="/season/Makuru">Makuru</a>
+    <a href="/season/Djilba">Djilba</a>
     <a href="/season/Kambarang">Kambarang</a>
   </nav>
 
-  <h1 id="title">Loading…</h1>
-  <p><strong id="description"></strong></p>
-  <p>Months: <span id="months"></span></p>
-  <p id="season-overview"></p>
+  <main>
+    <header class="season-header">
+      <span class="season-band"></span>
+      <h1 id="title">Loading…</h1>
+      <p class="season-meta"><strong id="description"></strong>, <span id="months"></span></p>
+      <p class="season-overview" id="season-overview"></p>
+    </header>
 
-  <h2>Statistics</h2>
-  <ul id="stats"></ul>
+    <p id="message"></p>
 
-  <h2>Weather events</h2>
-  <ul id="events"></ul>
+    <section>
+      <h2>Season summary</h2>
+      <p class="section-lede">
+        Daily weather for this season, October 2025 to September 2026.
+        Temperatures, sunshine and humidity are averages; rainfall is the season total.
+      </p>
+      <div class="table-scroll summary-table">
+        <table>
+          <thead>
+            <tr><th>Measure</th><th>Value</th></tr>
+          </thead>
+          <tbody id="summary-body"></tbody>
+        </table>
+      </div>
+    </section>
 
-  <p id="message"></p>
+    <section>
+      <h2>Temperature and rainfall across the year</h2>
+      <p class="section-lede" id="chart-lede">
+        Daily maximum and minimum temperature and daily rainfall, with this season shaded.
+      </p>
+      <div id="year-chart" class="chart"></div>
+    </section>
+
+    <nav class="cycle-nav" aria-label="Previous and next season">
+      <a id="previous" href="/"></a>
+      <a id="next" class="next" href="/"></a>
+    </nav>
+  </main>
 
   <script>
     // The season name is the last part of the address, e.g. /season/Makuru
-    const name = window.location.pathname.split("/").pop();
+    const requested = window.location.pathname.split("/").pop();
 
-    fetch(`/api/season/${name}`)
-      .then(response => {
-        if (!response.ok) throw new Error("Season not found");
-        return response.json();
-      })
-      .then(data => {
-        document.querySelector("#title").textContent = data.name;
-        document.title = `Nyoongar Seasons – ${data.name}`;
+    function showHeader(season, info, colour) {
+      document.title = `${season} – Nyoongar Seasons`;
+      document.querySelector("#title").textContent = season;
+      document.querySelector("#description").textContent = info.description;
+      document.querySelector("#months").textContent = info.months;
+      document.querySelector("#season-overview").textContent = info.overview;
+      document.documentElement.style.setProperty("--season-colour", colour);
 
-        document.querySelector("#description").textContent = data.info.description;
-        document.querySelector("#months").textContent = data.info.months;
-        document.querySelector("#season-overview").textContent = data.info.overview;
+      // Mark this season's link in the top navigation as the current page
+      for (const link of document.querySelectorAll("nav a")) {
+        if (link.getAttribute("href") === `/season/${season}`) {
+          link.setAttribute("aria-current", "page");
+        }
+      }
+    }
 
-        const s = data.stats;
-        document.querySelector("#stats").innerHTML = `
-          <li>Days in this season: ${s.days}</li>
-          <li>Mean minimum temperature: ${s.mean_min_temp} °C</li>
-          <li>Mean maximum temperature: ${s.mean_max_temp} °C</li>
-          <li>Total rainfall: ${s.total_rain} mm</li>
-          <li>Mean sunshine: ${s.mean_sun} hours</li>
-          <li>Mean 3pm humidity: ${s.mean_rh_3pm} %</li>`;
+    function fillSummaryTable(stats, events) {
+      const rows = [
+        ["Days in season", stats.days, false],
+        ["Mean minimum temperature (°C)", oneDecimal(stats.mean_min_temp), false],
+        ["Mean maximum temperature (°C)", oneDecimal(stats.mean_max_temp), false],
+        ["Total rainfall (mm)", oneDecimal(stats.total_rain), false],
+        ["Mean sunshine (hours)", oneDecimal(stats.mean_sun), false],
+        ["Mean 3pm humidity (%)", oneDecimal(stats.mean_rh_3pm), false],
+        // A line separates the averages from the event counts
+        ["Hot days (≥35°C)", events.hot_days, true],
+        ["Extreme heat days (≥40°C)", events.extreme_heat_days, false],
+        ["Cold nights (≤5°C)", events.cold_nights, false],
+        ["Rain days (≥1 mm)", events.rain_days, false],
+        ["Heavy rain days (≥10 mm)", events.heavy_rain_days, false],
+      ];
 
-        const e = data.events;
-        document.querySelector("#events").innerHTML = `
-          <li>Hot days (≥35°C): ${e.hot_days}</li>
-          <li>Extreme heat days (≥40°C): ${e.extreme_heat_days}</li>
-          <li>Cold nights (≤5°C): ${e.cold_nights}</li>
-          <li>Rain days (≥1 mm): ${e.rain_days}</li>
-          <li>Heavy rain days (≥10 mm): ${e.heavy_rain_days}</li>`;
+      const body = document.querySelector("#summary-body");
+      for (const [label, value, groupStart] of rows) {
+        const rowClass = groupStart ? ' class="group-start"' : "";
+        body.innerHTML += `<tr${rowClass}><td>${label}</td><td>${value}</td></tr>`;
+      }
+    }
+
+    // Find the first and last day of this season in the yearly data
+    function seasonRange(daily, season) {
+      const dates = daily.filter(d => d.season === season).map(d => d.date).sort();
+      const end = new Date(dates[dates.length - 1]);
+      end.setDate(end.getDate() + 1);  // shade to the end of the last day
+      return [dates[0], end.toISOString().slice(0, 10)];
+    }
+
+    function drawYearChart(daily, season, colour) {
+      const dates = daily.map(d => d.date);
+      const [start, end] = seasonRange(daily, season);
+
+      const traces = [
+        {
+          type: "scatter", mode: "lines", name: "Max temperature (°C)",
+          x: dates, y: daily.map(d => d.max_temp),
+          line: { color: "#A95607", width: 1.5 },
+          hovertemplate: "%{x|%d %b %Y}: %{y} °C<extra>Max</extra>",
+        },
+        {
+          type: "scatter", mode: "lines", name: "Min temperature (°C)",
+          x: dates, y: daily.map(d => d.min_temp),
+          line: { color: "#6F97AE", width: 1.5 },
+          hovertemplate: "%{x|%d %b %Y}: %{y} °C<extra>Min</extra>",
+        },
+        {
+          type: "bar", name: "Rainfall (mm)",
+          x: dates, y: daily.map(d => d.rain),
+          marker: { color: "#2F5D73" },
+          yaxis: "y2",
+          hovertemplate: "%{x|%d %b %Y}: %{y} mm<extra>Rain</extra>",
+        },
+      ];
+
+      const layout = {
+        font: CHART_FONT,
+        margin: { t: 30, r: 10, b: 40, l: 55 },
+        showlegend: true,
+        legend: { orientation: "h", y: -0.12 },
+        hovermode: "x unified",
+        xaxis: { type: "date", tickformat: "%b %Y", automargin: true, anchor: "y2" },
+        // Temperature on the top panel, rainfall on the bottom panel
+        yaxis: { title: { text: "Temperature (°C)" }, domain: [0.38, 1], gridcolor: "#E6DCCF" },
+        yaxis2: { title: { text: "Rain (mm)" }, domain: [0, 0.28], gridcolor: "#E6DCCF", rangemode: "tozero" },
+        shapes: [{
+          type: "rect", xref: "x", yref: "paper",
+          x0: start, x1: end, y0: 0, y1: 1,
+          fillcolor: colour, opacity: 0.22, line: { width: 0 }, layer: "below",
+        }],
+        annotations: [{
+          xref: "x", yref: "paper",
+          x: start, y: 1.02, xanchor: "left", yanchor: "bottom",
+          text: `<b>${season}</b>`, showarrow: false,
+        }],
+        paper_bgcolor: "rgba(0,0,0,0)",
+        plot_bgcolor: "rgba(0,0,0,0)",
+      };
+
+      Plotly.newPlot("year-chart", traces, layout, { responsive: true, displayModeBar: false });
+    }
+
+    // Links to the seasons before and after this one, wrapping around the year
+    function showCycleNav(seasons, season) {
+      const i = seasons.indexOf(season);
+      const previous = seasons[(i - 1 + seasons.length) % seasons.length];
+      const next = seasons[(i + 1) % seasons.length];
+
+      const prevLink = document.querySelector("#previous");
+      prevLink.href = `/season/${previous}`;
+      prevLink.innerHTML = `<span>Previous season</span>${previous}`;
+
+      const nextLink = document.querySelector("#next");
+      nextLink.href = `/season/${next}`;
+      nextLink.innerHTML = `<span>Next season</span>${next}`;
+    }
+
+    Promise.all([
+      getJSON("/api/summary"),
+      getJSON(`/api/season/${requested}`),
+      getJSON("/api/daily"),
+    ])
+      .then(([summary, detail, year]) => {
+        const season = detail.name;
+        const colour = colourBySeason(summary.summary)[season].fill;
+
+        showHeader(season, detail.info, colour);
+        fillSummaryTable(detail.stats, detail.events);
+        drawYearChart(year.daily, season, colour);
+        showCycleNav(summary.seasons, season);
       })
       .catch(() => {
-        document.querySelector("#title").textContent = "Something went wrong";
-        document.querySelector("#message").textContent = "Sorry, this season's data could not be loaded.";
+        document.querySelector("#title").textContent = "Season data unavailable";
+        document.querySelector("#message").textContent =
+          "The data for this season could not be loaded. Check that the Flask app is running, then refresh the page.";
       });
   </script>
 </body>
