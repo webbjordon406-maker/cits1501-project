@@ -33,3 +33,8 @@
     AI used to help develop 8 tests needed for assignment by creating test_analysis.py/test_app.py/test_data.py
 
     Manual checking was needed for the check numbers in test_analysis.py 
+
+#Use 9
+    AI used to help ensure privacy and security section at the bottom of the home page is formatted correctly and adheres to assignment requirments
+
+    Note that the actually policies were manually checked to enure that the app adheres to their wording 
