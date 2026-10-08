@@ -42,3 +42,72 @@ def test_threshold_must_be_a_number():
         assert False, "expected a ValueError"
     except ValueError:
         pass
+
+# --- Day matcher (closest_season) ---
+
+def test_hot_dry_day_matches_birak():
+    result = analysis.closest_season(weather, 38, 0)
+    assert result["season"] == "Birak"
+
+
+def test_cold_wet_day_matches_makuru():
+    result = analysis.closest_season(weather, 16, 20)
+    assert result["season"] == "Makuru"
+
+
+def test_matcher_compares_all_six_seasons():
+    result = analysis.closest_season(weather, 24, 2)
+    assert len(result["distances"]) == 6
+
+
+def test_matcher_accepts_numbers_as_text():
+    # Form inputs arrive as text, so "38" must work the same as 38
+    result = analysis.closest_season(weather, "38", "0")
+    assert result["season"] == "Birak"
+
+
+def test_matcher_accepts_limits():
+    # Boundary: 50°C and 0 mm are the edges of the allowed range, so they are accepted
+    result = analysis.closest_season(weather, 50, 0)
+    assert result["season"] in data.SEASONS
+
+
+def test_matcher_rejects_blank_input():
+    try:
+        analysis.closest_season(weather, "", "0")
+        assert False, "expected a ValueError"
+    except ValueError:
+        pass
+
+
+def test_matcher_rejects_negative_rain():
+    try:
+        analysis.closest_season(weather, 25, -1)
+        assert False, "expected a ValueError"
+    except ValueError:
+        pass
+
+
+def test_matcher_rejects_impossible_temperature():
+    try:
+        analysis.closest_season(weather, 60, 0)
+        assert False, "expected a ValueError"
+    except ValueError:
+        pass
+
+
+def test_matcher_rejects_text():
+    try:
+        analysis.closest_season(weather, "hot", 0)
+        assert False, "expected a ValueError"
+    except ValueError:
+        pass
+
+
+def test_matcher_with_no_data():
+    empty = weather.iloc[0:0]
+    try:
+        analysis.closest_season(empty, 25, 0)
+        assert False, "expected a ValueError"
+    except ValueError:
+        pass

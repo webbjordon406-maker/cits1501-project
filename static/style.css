@@ -160,6 +160,56 @@ td a {
 .season-meta { font-size: 1.15rem; margin: 0 0 1rem; }
 .summary-table { max-width: 34rem; }
 
+/* --- Match a day page --- */
+.match-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem 1.5rem;
+  margin-top: 1.5rem;
+}
+.match-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-weight: 500;
+}
+.match-form input {
+  width: 11rem;
+  padding: 0.55rem 0.7rem;
+  font: inherit;
+  color: var(--ink);
+  border: 1px solid var(--ink-soft);
+  border-radius: 0.3rem;
+}
+.match-form button {
+  padding: 0.6rem 1.2rem;
+  font: inherit;
+  font-weight: 700;
+  color: white;
+  background: var(--step-1);
+  border: none;
+  border-radius: 0.3rem;
+  cursor: pointer;
+}
+.match-form button:hover { background: var(--step-2); }
+
+.examples { color: var(--ink-soft); margin-top: 1.25rem; }
+.example {
+  margin: 0.2rem 0.3rem 0.2rem 0;
+  padding: 0.3rem 0.7rem;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--ink);
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  cursor: pointer;
+}
+.example:hover { border-color: var(--ink-soft); }
+
+#result-season { color: var(--ink); }
+
 /* --- Error page --- */
 .error-page { padding-top: 3rem; max-width: 40rem; }
 .error-page a { color: var(--ink); font-weight: 700; }

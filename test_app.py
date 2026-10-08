@@ -27,3 +27,23 @@ def test_season_page_ignores_capitals():
     client = app.test_client()
     response = client.get("/season/MAKURU")
     assert response.status_code == 200
+
+def test_match_page_loads():
+    client = app.test_client()
+    response = client.get("/match")
+    assert response.status_code == 200
+
+
+def test_match_route():
+    client = app.test_client()
+    response = client.get("/api/match?max_temp=16&rain=20")
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data["season"] == "Makuru"
+
+
+def test_match_route_missing_input():
+    client = app.test_client()
+    response = client.get("/api/match?max_temp=25")   # no rain given
+    assert response.status_code == 400
+    assert "error" in response.get_json()

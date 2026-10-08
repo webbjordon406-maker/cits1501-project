@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Match a day – Nyoongar Seasons</title>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <script src="/static/seasons.js"></script>
+</head>
+<body>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/season/Birak">Birak</a>
+    <a href="/season/Bunuru">Bunuru</a>
+    <a href="/season/Djeran">Djeran</a>
+    <a href="/season/Makuru">Makuru</a>
+    <a href="/season/Djilba">Djilba</a>
+    <a href="/season/Kambarang">Kambarang</a>
+    <a href="/match" aria-current="page">Match a day</a>
+  </nav>
+
+  <main>
+    <header class="season-header">
+      <h1>Which season does this day feel like?</h1>
+      <p>
+        Enter a day's maximum temperature and rainfall. The app compares it with the average
+        day in each of the six seasons, using a year of Perth weather, and finds the closest match.
+      </p>
+    </header>
+
+    <!-- novalidate: the server checks the input, so every mistake gets the same clear message -->
+    <form id="match-form" class="match-form" novalidate>
+      <label>
+        Maximum temperature (°C)
+        <input id="max-temp" type="number" step="any" placeholder="e.g. 31">
+      </label>
+      <label>
+        Rainfall (mm)
+        <input id="rain" type="number" step="any" placeholder="e.g. 0">
+      </label>
+      <button type="submit">Find the season</button>
+    </form>
+
+    <p class="examples">
+      Or try:
+      <button type="button" class="example" data-temp="38" data-rain="0">a scorching dry day</button>
+      <button type="button" class="example" data-temp="16" data-rain="20">a cold, stormy day</button>
+      <button type="button" class="example" data-temp="24" data-rain="2">a mild, showery day</button>
+    </p>
+
+    <p id="message" role="alert"></p>
+
+    <section id="result" hidden>
+      <span class="season-band"></span>
+      <h2>This day feels like <a id="result-season" href="#"></a></h2>
+      <p id="result-detail" class="section-lede"></p>
+
+      <h2>How close each season is</h2>
+      <p class="section-lede">
+        A lower score means the season's average day is more like yours. The score combines the
+        temperature gap and the rainfall gap, each measured against how much that measure
+        normally varies across the year.
+      </p>
+      <div id="distance-chart" class="chart"></div>
+    </section>
+  </main>
+
+  <script>
+    let colours = {};   // season colours, filled in once the summary has loaded
+
+    // Ask the server for the closest season. Unlike getJSON, this keeps the
+    // server's error message (e.g. "Rainfall must be between 0 and 300") so the
+    // user can see exactly what to fix.
+    function findMatch(maxTemp, rain) {
+      const url = `/api/match?max_temp=${encodeURIComponent(maxTemp)}&rain=${encodeURIComponent(rain)}`;
+      return fetch(url).then(response => {
+        if (response.status === 400) {
+          return response.json().then(data => { throw new Error(data.error); });
+        }
+        if (!response.ok) throw new Error("Something went wrong on the server. Please try again.");
+        return response.json();
+      });
+    }
+
+    // A season's colour, or the darkest colour if the summary hasn't loaded yet
+    function colourOf(season) {
+      return colours[season] ? colours[season].fill : GRADIENT[0];
+    }
+
+    function showResult(result, maxTemp, rain) {
+      const season = result.season;
+      const average = result.averages[season];
+
+      const link = document.querySelector("#result-season");
+      link.textContent = season;
+      link.href = `/season/${season}`;
+      document.querySelector("#result .season-band").style.background = colourOf(season);
+      document.querySelector("#result-detail").textContent =
+        `You entered ${maxTemp}°C and ${rain} mm of rain. ` +
+        `An average ${season} day reaches ${average.max_temp}°C with ${average.rain} mm of rain.`;
+
+      drawDistanceChart(result);
+      document.querySelector("#result").hidden = false;
+    }
+
+    function drawDistanceChart(result) {
+      // Closest season at the top
+      const seasons = Object.keys(result.distances)
+        .sort((a, b) => result.distances[a] - result.distances[b]);
+
+      const trace = {
+        type: "bar",
+        orientation: "h",
+        y: seasons,
+        x: seasons.map(season => result.distances[season]),
+        marker: { color: seasons.map(colourOf) },
+        customdata: seasons.map(season => [result.averages[season].max_temp, result.averages[season].rain]),
+        hovertemplate: "<b>%{y}</b><br>Score: %{x}<br>" +
+                       "Average day: %{customdata[0]}°C, %{customdata[1]} mm<extra></extra>",
+      };
+
+      const layout = {
+        font: CHART_FONT,
+        margin: { t: 10, r: 10, b: 50, l: 90 },
+        xaxis: { title: { text: "Difference score (lower = closer)" }, gridcolor: "#E6DCCF", rangemode: "tozero" },
+        yaxis: { autorange: "reversed" },
+      };
+
+      Plotly.newPlot("distance-chart", [trace], layout, { displayModeBar: false, responsive: true });
+    }
+
+    function runMatch() {
+      const maxTemp = document.querySelector("#max-temp").value;
+      const rain = document.querySelector("#rain").value;
+      const message = document.querySelector("#message");
+      message.textContent = "";
+
+      findMatch(maxTemp, rain)
+        .then(result => showResult(result, maxTemp, rain))
+        .catch(error => {
+          document.querySelector("#result").hidden = true;
+          message.textContent = error.message;
+        });
+    }
+
+    document.querySelector("#match-form").addEventListener("submit", event => {
+      event.preventDefault();   // stay on this page instead of reloading it
+      runMatch();
+    });
+
+    // The example buttons fill in the form and run it
+    document.querySelectorAll(".example").forEach(button => {
+      button.addEventListener("click", () => {
+        document.querySelector("#max-temp").value = button.dataset.temp;
+        document.querySelector("#rain").value = button.dataset.rain;
+        runMatch();
+      });
+    });
+
+    getJSON("/api/summary")
+      .then(data => { colours = colourBySeason(data.summary); })
+      .catch(() => {
+        document.querySelector("#message").textContent =
+          "The season data could not be loaded. Check that the Flask app is running, then refresh the page.";
+      });
+  </script>
+</body>
+</html>

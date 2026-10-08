@@ -1,10 +1,10 @@
 """Flask app for the Nyoongar seasonal weather explorer."""
 from pathlib import Path
 
-from flask import Flask, jsonify, send_file
+from flask import Flask, jsonify, request, send_file
 
 from data import SEASONS, load_weather, assign_seasons, load_season_info
-from analysis import season_summary, season_detail
+from analysis import season_summary, season_detail, closest_season
 
 app = Flask(__name__)
 PAGES = Path(__file__).parent / "templates"
@@ -51,6 +51,11 @@ def season_page(name):
     return send_file(PAGES / "season.html")
 
 
+@app.route("/match")
+def match_page():
+    return send_file(PAGES / "match.html")
+
+
 @app.errorhandler(404)
 def page_not_found(error):
     return send_file(PAGES / "error.html"), 404
@@ -92,6 +97,17 @@ def api_daily():
     daily = weather[["date", "min_temp", "max_temp", "rain", "season"]].copy()
     daily["season"] = daily["season"].astype(str)
     return jsonify(daily=to_records(daily))
+
+
+@app.route("/api/match")
+def api_match():
+    # e.g. /api/match?max_temp=31&rain=0
+    try:
+        result = closest_season(weather, request.args.get("max_temp"), request.args.get("rain"))
+    except ValueError as error:
+        # Bad input gets a clear message and a 400 ("your request was wrong"), not a crash
+        return jsonify(error=str(error)), 400
+    return jsonify(result)
 
 
 if __name__ == "__main__":
