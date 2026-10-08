@@ -1,7 +1,6 @@
 """Flask app for the Nyoongar seasonal weather explorer."""
 from pathlib import Path
 
-import pandas as pd
 from flask import Flask, jsonify, send_file
 
 from data import SEASONS, load_weather, assign_seasons, load_season_info
@@ -10,7 +9,7 @@ from analysis import season_summary, season_detail
 app = Flask(__name__)
 PAGES = Path(__file__).parent / "templates"
 
-# Load and prepare the data and season descriptions once, when the app starts
+# Load the weather data and season descriptions once, when the app starts
 weather = assign_seasons(load_weather())
 season_info = load_season_info()
 
@@ -18,26 +17,22 @@ season_info = load_season_info()
 # --- Helpers ---
 
 def match_season(name):
-    """Return the correctly capitalised season name, or None if it isn't valid.
-
-    Accepts any capitalisation, so "makuru" and "MAKURU" both become "Makuru".
-    """
+    """Return the correctly capitalised season name, or None if it isn't valid."""
     for season in SEASONS:
-        if season.lower() == name.strip().lower():
+        if season.lower() == name.lower():
             return season
     return None
 
 
 def to_records(df):
-    """Convert a DataFrame to a list of dicts that jsonify can handle.
+    """Convert a DataFrame into a list of dictionaries that jsonify can send.
 
-    Dates become "YYYY-MM-DD" strings and NaN becomes None (null in JSON),
-    because NaN is not valid JSON.
+    Dates become "YYYY-MM-DD" text, and missing values (NaN) become None,
+    because NaN is not allowed in JSON.
     """
     df = df.copy()
-    for col in df.columns:
-        if pd.api.types.is_datetime64_any_dtype(df[col]):
-            df[col] = df[col].dt.strftime("%Y-%m-%d")
+    if "date" in df.columns:
+        df["date"] = df["date"].dt.strftime("%Y-%m-%d")
     df = df.astype(object).where(df.notna(), None)
     return df.to_dict(orient="records")
 
@@ -58,16 +53,15 @@ def season_page(name):
 
 @app.errorhandler(404)
 def page_not_found(error):
-    # Any other unknown address also gets the friendly error page
     return send_file(PAGES / "error.html"), 404
 
 
-# --- API routes ---
+# --- API routes (send data to the pages as JSON) ---
 
 @app.route("/api/summary")
 def api_summary():
     summary = season_summary(weather).reset_index()
-    events = {s: season_detail(weather, s)["events"] for s in SEASONS}
+    events = {season: season_detail(weather, season)["events"] for season in SEASONS}
     return jsonify(
         overview=season_info["overview"],
         note=season_info["note"],
@@ -82,23 +76,23 @@ def api_summary():
 def api_season(name):
     season = match_season(name)
     if season is None:
-        return jsonify(error=f"Unknown season: {name!r}", valid_seasons=SEASONS), 404
+        return jsonify(error=f"Unknown season: {name}"), 404
 
     detail = season_detail(weather, season)
     return jsonify(
-        name=detail["name"],
+        name=season,
         info=season_info["seasons"][season],
         stats=detail["stats"],
         events=detail["events"],
-        daily=to_records(detail["daily"]),
     )
+
+
 @app.route("/api/daily")
 def api_daily():
-    """Every day of the year, with its season, for the year-long chart."""
-    columns = ["date", "min_temp", "max_temp", "rain", "season"]
-    daily = weather[columns].copy()
+    daily = weather[["date", "min_temp", "max_temp", "rain", "season"]].copy()
     daily["season"] = daily["season"].astype(str)
     return jsonify(daily=to_records(daily))
+
 
 if __name__ == "__main__":
     app.run(debug=True)

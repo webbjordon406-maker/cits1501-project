@@ -4,32 +4,32 @@
   "seasons": {
     "Birak": {
       "months": "December and January",
-      "description": "Mosaic burning time",
+      "description": "Mosaic Burning Time:",
       "overview": "defined by easing of the rains, sea breeze picks up from the SW and increase in temperature. Also known as a fire season. First nations people would burn the land to aid in seed germination, create easy travel routes, and increase grazing land."
     },
     "Bunuru": {
       "months": "February and March",
-      "description": "Fishing time",
+      "description": "Fishing Time:",
       "overview": "hottest time of the year with minimal rain and easterly winds. This makes it perfect time for living by and fishing at the coast. Bunuru also sees the blooming of many white flowers."
     },
     "Djeran": {
       "months": "April and May",
-      "description": "Season of adulthood",
+      "description": "Season of Adulthood",
       "overview": "temperature begins to decrease with cool nights and dewy early mornings. It represents a time of flying ants and red flowers blooming. Shelters are traditionally repaired to ensure they are waterproofed before the wet seasons."
     },
     "Makuru": {
       "months": "June and July",
-      "description": "season of fertility",
+      "description": "Season of Fertility:",
       "overview": "Makuru is the coldest and wettest time of the year. This represented a time to move inland, and diet shifted from costal foods to those of the land. Many animals in this time begin to pair up in preparation for breeding."
     },
     "Djilba": {
       "months": "August and September",
-      "description": "season of conception",
+      "description": "Season of Conception:",
       "overview": "transitional time of year that combines cold days with warm, rainy, windy days. Defined by a massive blooming period of vivid flowers in the south-west region. As the temperatures begin to rise, newborn animals begin to be born."
     },
     "Kambarang": {
       "months": "October and November",
-      "description": "season of birth",
+      "description": "Season of Birth:",
       "overview": "shows continued abundance of vivid flowers and rising temperatures. Increased dry periods happen this time of year."
     }
   }

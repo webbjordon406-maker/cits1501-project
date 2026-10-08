@@ -4,12 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Nyoongar Seasons</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
   <script src="/static/seasons.js"></script>
-  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
   <nav>
@@ -31,8 +29,9 @@
       </div>
 
       <div class="wheel-wrap">
-        <svg id="wheel" viewBox="0 0 500 500" role="img"
-             aria-label="The six Nyoongar seasons arranged in a circle. Select a season to see its details.">
+        <svg id="wheel" viewBox="0 0 500 500">
+          <text x="250" y="246" text-anchor="middle" class="centre-name">Six seasons</text>
+          <text x="250" y="270" text-anchor="middle" class="centre-detail">Select a season</text>
         </svg>
         <div class="key">
           <span>Cooler</span><span class="key-bar"></span><span>Warmer</span>
@@ -78,79 +77,40 @@
   </main>
 
   <script>
-    const SVG_NS = "http://www.w3.org/2000/svg";
-
-    // A point on a circle, with 0 degrees at the top and angles going clockwise
-    function point(cx, cy, r, degrees) {
+    // A point on a circle: 0 degrees is the top, and angles go clockwise
+    function point(radius, degrees) {
       const radians = (degrees - 90) * Math.PI / 180;
-      return [cx + r * Math.cos(radians), cy + r * Math.sin(radians)];
+      return [250 + radius * Math.cos(radians), 250 + radius * Math.sin(radians)];
     }
 
-    // SVG path for one ring-shaped wedge between two angles
-    function wedgePath(cx, cy, rOuter, rInner, start, end) {
-      const [x1, y1] = point(cx, cy, rOuter, start);
-      const [x2, y2] = point(cx, cy, rOuter, end);
-      const [x3, y3] = point(cx, cy, rInner, end);
-      const [x4, y4] = point(cx, cy, rInner, start);
-      return `M ${x1} ${y1} A ${rOuter} ${rOuter} 0 0 1 ${x2} ${y2}
-              L ${x3} ${y3} A ${rInner} ${rInner} 0 0 0 ${x4} ${y4} Z`;
-    }
-
-    function makeText(x, y, className, content, fill) {
-      const t = document.createElementNS(SVG_NS, "text");
-      t.setAttribute("x", x);
-      t.setAttribute("y", y);
-      t.setAttribute("text-anchor", "middle");
-      t.setAttribute("class", className);
-      if (fill) t.setAttribute("fill", fill);
-      t.textContent = content;
-      return t;
+    // The SVG outline of one wedge: an outer arc, a line in, an inner arc, and back
+    function wedgePath(start, end) {
+      const outer = 235, inner = 105;
+      const [x1, y1] = point(outer, start);
+      const [x2, y2] = point(outer, end);
+      const [x3, y3] = point(inner, end);
+      const [x4, y4] = point(inner, start);
+      return `M ${x1} ${y1} A ${outer} ${outer} 0 0 1 ${x2} ${y2}
+              L ${x3} ${y3} A ${inner} ${inner} 0 0 0 ${x4} ${y4} Z`;
     }
 
     function drawWheel(seasons, info, colours) {
       const svg = document.querySelector("#wheel");
-      const cx = 250, cy = 250, rOuter = 235, rInner = 105;
-      const step = 360 / seasons.length;
-
-      // Centre text changes when a season is hovered or focused
-      const centreName = makeText(cx, cy - 4, "centre-name", "Six seasons");
-      const centreDetail = makeText(cx, cy + 20, "centre-detail", "Select a season");
-      svg.append(centreName, centreDetail);
 
       seasons.forEach((season, i) => {
-        // Birak is centred at the top; the rest follow clockwise
-        const start = i * step - step / 2;
-        const end = start + step;
-        const middle = start + step / 2;
+        // Each wedge is 60 degrees; Birak is centred at the top
+        const start = i * 60 - 30;
+        const end = start + 60;
+        const [x, y] = point(170, start + 30);  // middle of the wedge, for the label
+        const { fill, text } = colours[season];
 
-        const link = document.createElementNS(SVG_NS, "a");
-        link.setAttribute("href", `/season/${season}`);
-        link.setAttribute("class", "wedge");
-        link.setAttribute("aria-label", `${season}, ${info[season].months}`);
-
-        const path = document.createElementNS(SVG_NS, "path");
-        path.setAttribute("d", wedgePath(cx, cy, rOuter, rInner, start, end));
-        path.setAttribute("fill", colours[season].fill);
-
-        const [lx, ly] = point(cx, cy, (rOuter + rInner) / 2, middle);
-        const name = makeText(lx, ly, "wedge-name", season, colours[season].text);
-        const months = makeText(lx, ly + 18, "wedge-months", info[season].months, colours[season].text);
-
-        link.append(path, name, months);
-        svg.append(link);
-
-        const show = () => {
-          centreName.textContent = season;
-          centreDetail.textContent = info[season].description;
-        };
-        const reset = () => {
-          centreName.textContent = "Six seasons";
-          centreDetail.textContent = "Select a season";
-        };
-        link.addEventListener("mouseenter", show);
-        link.addEventListener("focus", show);
-        link.addEventListener("mouseleave", reset);
-        link.addEventListener("blur", reset);
+        // Each wedge is a link to that season's page
+        svg.innerHTML += `
+          <a href="/season/${season}" class="wedge">
+            <path d="${wedgePath(start, end)}" fill="${fill}"></path>
+            <text x="${x}" y="${y}" text-anchor="middle" class="wedge-name" fill="${text}">${season}</text>
+            <text x="${x}" y="${y + 18}" text-anchor="middle" class="wedge-months" fill="${text}">${info[season].months}</text>
+          </a>`;
       });
     }
 
@@ -160,8 +120,10 @@
         body.innerHTML += `<tr>
           <td><span class="swatch" style="background:${colours[row.season].fill}"></span><a href="/season/${row.season}">${row.season}</a></td>
           <td>${row.days}</td>
-          <td>${oneDecimal(row.mean_min_temp)}</td><td>${oneDecimal(row.mean_max_temp)}</td>
-          <td>${oneDecimal(row.total_rain)}</td><td>${oneDecimal(row.mean_sun)}</td>
+          <td>${oneDecimal(row.mean_min_temp)}</td>
+          <td>${oneDecimal(row.mean_max_temp)}</td>
+          <td>${oneDecimal(row.total_rain)}</td>
+          <td>${oneDecimal(row.mean_sun)}</td>
           <td>${oneDecimal(row.mean_rh_3pm)}</td>
         </tr>`;
       }
@@ -176,27 +138,25 @@
         { key: "heavy_rain_days",   label: "Heavy rain (≥10 mm)",  colour: "#2F5D73" },
       ];
 
+      // One set of bars for each type of event
       const traces = eventTypes.map(type => ({
         type: "bar",
         name: type.label,
         x: seasons,
-        y: seasons.map(s => events[s][type.key]),
+        y: seasons.map(season => events[season][type.key]),
         marker: { color: type.colour },
-        hovertemplate: "%{x}: %{y} days<extra>" + type.label + "</extra>",
       }));
 
       const layout = {
         barmode: "group",
         font: CHART_FONT,
         margin: { t: 10, r: 10, b: 60, l: 50 },
-        yaxis: { title: { text: "Days" }, gridcolor: "#E6DCCF", rangemode: "tozero" },
-        xaxis: { tickfont: { size: 14 }, automargin: true },
+        yaxis: { title: { text: "Days" }, gridcolor: "#E6DCCF" },
         legend: { orientation: "h", y: -0.18 },
-        paper_bgcolor: "rgba(0,0,0,0)",
-        plot_bgcolor: "rgba(0,0,0,0)",
       };
 
-      Plotly.newPlot("events-chart", traces, layout, { responsive: true, displayModeBar: false });
+      // staticPlot turns off all chart interaction (hovering, zooming, clicking the legend)
+      Plotly.newPlot("events-chart", traces, layout, { staticPlot: true, responsive: true });
     }
 
     getJSON("/api/summary")
