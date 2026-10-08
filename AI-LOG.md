@@ -6,4 +6,7 @@
     AI helped write code to group the raw data by its associated indigenous season
 
 #Use 2
-    AI define the data loading and indigenous season allocation as functions which helps order and structure the data so it runs in a logical order
+    AI defines the data loading and indigenous season allocation as functions which helps order and structure the data so it runs in a logical order and can be tested for invalid inputs and edge cases 
+
+#Use 3
+    Generated code to run neccessary analysis on the data per season

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Noongar Seasons – Overview</title>
+</head>
+<body>
+  <nav>
+    <a href="/">Home</a> |
+    <a href="/season/Birak">Birak</a> |
+    <a href="/season/Bunuru">Bunuru</a> |
+    <a href="/season/Djeran">Djeran</a> |
+    <a href="/season/Makuru">Makuru</a> |
+    <a href="/season/Djilba">Djilba</a> |
+    <a href="/season/Kambarang">Kambarang</a>
+  </nav>
+
+  <h1>Noongar Seasons in Perth</h1>
+  <p>Daily weather, October 2025 – September 2026, grouped by Noongar seasons.</p>
+
+  <h2>Season summary</h2>
+  <table id="summary" border="1">
+    <thead>
+      <tr>
+        <th>Season</th><th>Days</th><th>Mean min (°C)</th><th>Mean max (°C)</th>
+        <th>Total rain (mm)</th><th>Mean sun (hrs)</th><th>3pm humidity (%)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>Weather events</h2>
+  <table id="events" border="1">
+    <thead>
+      <tr>
+        <th>Season</th><th>Hot days (≥35°C)</th><th>Extreme heat (≥40°C)</th>
+        <th>Cold nights (≤5°C)</th><th>Rain days (≥1mm)</th><th>Heavy rain (≥10mm)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <p id="message"></p>
+
+  <script>
+    fetch("/api/summary")
+      .then(response => response.json())
+      .then(data => {
+        const summaryBody = document.querySelector("#summary tbody");
+        for (const row of data.summary) {
+          summaryBody.innerHTML += `<tr>
+            <td><a href="/season/${row.season}">${row.season}</a></td>
+            <td>${row.days}</td><td>${row.mean_min_temp}</td><td>${row.mean_max_temp}</td>
+            <td>${row.total_rain}</td><td>${row.mean_sun}</td><td>${row.mean_rh_3pm}</td>
+          </tr>`;
+        }
+
+        const eventsBody = document.querySelector("#events tbody");
+        for (const season of data.seasons) {
+          const e = data.events[season];
+          eventsBody.innerHTML += `<tr>
+            <td>${season}</td><td>${e.hot_days}</td><td>${e.extreme_heat_days}</td>
+            <td>${e.cold_nights}</td><td>${e.rain_days}</td><td>${e.heavy_rain_days}</td>
+          </tr>`;
+        }
+      })
+      .catch(() => {
+        document.querySelector("#message").textContent = "Sorry, the data could not be loaded.";
+      });
+  </script>
+</body>
+</html>

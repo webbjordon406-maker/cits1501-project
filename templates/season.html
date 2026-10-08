@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Noongar Seasons – Season</title>
+</head>
+<body>
+  <nav>
+    <a href="/">Home</a> |
+    <a href="/season/Birak">Birak</a> |
+    <a href="/season/Bunuru">Bunuru</a> |
+    <a href="/season/Djeran">Djeran</a> |
+    <a href="/season/Makuru">Makuru</a> |
+    <a href="/season/Djilba">Djilba</a> |
+    <a href="/season/Kambarang">Kambarang</a>
+  </nav>
+
+  <h1 id="title">Loading…</h1>
+
+  <h2>Statistics</h2>
+  <ul id="stats"></ul>
+
+  <h2>Weather events</h2>
+  <ul id="events"></ul>
+
+  <p id="message"></p>
+
+  <script>
+    // The season name is the last part of the address, e.g. /season/Makuru
+    const name = window.location.pathname.split("/").pop();
+
+    fetch(`/api/season/${name}`)
+      .then(response => {
+        if (!response.ok) throw new Error("Season not found");
+        return response.json();
+      })
+      .then(data => {
+        document.querySelector("#title").textContent = data.name;
+        document.title = `Noongar Seasons – ${data.name}`;
+
+        const s = data.stats;
+        document.querySelector("#stats").innerHTML = `
+          <li>Days in this season: ${s.days}</li>
+          <li>Mean minimum temperature: ${s.mean_min_temp} °C</li>
+          <li>Mean maximum temperature: ${s.mean_max_temp} °C</li>
+          <li>Total rainfall: ${s.total_rain} mm</li>
+          <li>Mean sunshine: ${s.mean_sun} hours</li>
+          <li>Mean 3pm humidity: ${s.mean_rh_3pm} %</li>`;
+
+        const e = data.events;
+        document.querySelector("#events").innerHTML = `
+          <li>Hot days (≥35°C): ${e.hot_days}</li>
+          <li>Extreme heat days (≥40°C): ${e.extreme_heat_days}</li>
+          <li>Cold nights (≤5°C): ${e.cold_nights}</li>
+          <li>Rain days (≥1 mm): ${e.rain_days}</li>
+          <li>Heavy rain days (≥10 mm): ${e.heavy_rain_days}</li>`;
+      })
+      .catch(() => {
+        document.querySelector("#title").textContent = "Something went wrong";
+        document.querySelector("#message").textContent = "Sorry, this season's data could not be loaded.";
+      });
+  </script>
+</body>
+</html>
