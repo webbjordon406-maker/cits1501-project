@@ -20,7 +20,8 @@ def count_extreme_days(df, column, threshold, above=True):
     """Count the days in each season where a column is above (or below) a threshold."""
     if column not in df.columns:
         raise ValueError(f"Unknown column: {column}")
-
+    if not isinstance(threshold, (int, float)):
+        raise ValueError(f"Threshold must be a number, not {threshold!r}")
     if above:
         matches = df[df[column] >= threshold]
     else:
@@ -32,8 +33,10 @@ def count_extreme_days(df, column, threshold, above=True):
     return counts.reindex(SEASONS, fill_value=0)
 
 
+
 def season_detail(df, season):
     """Return the statistics and weather event counts for one season."""
+    season = season.strip().capitalize()  # accept "makuru", "MAKURU", " Makuru "
     if season not in SEASONS:
         raise ValueError(f"Unknown season: {season!r}. Expected one of {SEASONS}")
 
