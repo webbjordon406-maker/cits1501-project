@@ -95,4 +95,4 @@ def api_daily():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(port=5002)
