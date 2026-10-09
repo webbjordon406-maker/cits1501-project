@@ -105,10 +105,7 @@ td a {
 .chart { width: 100%; min-height: 420px; }
 
 /* --- Home page: introduction, then a large season wheel below it --- */
-.intro {
-  max-width: 46rem;   /* keep lines of text short enough to read comfortably */
-  padding-top: 3rem;
-}
+.intro { padding-top: 3rem; }   /* spans the full width of the page */
 .intro p { margin: 0 0 1rem; }
 
 /* Stack the heading, wheel and key in a column, centred on the page */
@@ -168,6 +165,50 @@ td a {
 }
 .season-meta { font-size: 1.15rem; margin: 0 0 1rem; }
 .summary-table { max-width: 34rem; }
+
+/* Arrows that move the shaded season on the year chart */
+.shade-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+.shade-controls button {
+  width: 2.4rem;
+  height: 2.4rem;
+  font: inherit;
+  color: var(--ink);
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.shade-controls button:hover { border-color: var(--ink-soft); }
+#shade-name {
+  min-width: 7rem;
+  text-align: center;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+/* Previous / next season links at the bottom of a season page */
+.season-steps {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 3.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+}
+.season-steps a {
+  padding: 0.6rem 1rem;
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: none;
+  border: 1px solid var(--line);
+  border-radius: 0.3rem;
+}
+.season-steps a:hover { border-color: var(--ink-soft); }
 
 /* --- Match a day page --- */
 .match-form {

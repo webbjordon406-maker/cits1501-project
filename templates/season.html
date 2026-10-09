@@ -50,10 +50,22 @@
     <section>
       <h2>Temperature and rainfall across the year</h2>
       <p class="section-lede">
-        Daily maximum and minimum temperature and daily rainfall, with this season shaded.
+        Daily maximum and minimum temperature and daily rainfall. This season is shaded;
+        use the arrows to move the shading to the previous or next season and compare them.
       </p>
+      <div class="shade-controls">
+        <button type="button" id="shade-prev" aria-label="Shade the previous season">◀</button>
+        <span id="shade-name" aria-live="polite"></span>
+        <button type="button" id="shade-next" aria-label="Shade the next season">▶</button>
+      </div>
+      <p id="shade-detail" class="section-lede"></p>
       <div id="year-chart" class="chart"></div>
     </section>
+
+    <div class="season-steps">
+      <a id="prev-season" href="/"></a>
+      <a id="next-season" href="/"></a>
+    </div>
   </main>
 
   <script>
@@ -90,13 +102,60 @@
       }
     }
 
-    function drawYearChart(daily, season, colour) {
-      const dates = daily.map(day => day.date);
+    // Filled in once the data has loaded, so the arrows can move the shading
+    let page = {};      // { daily, seasons, colours, summary }
+    let shaded = null;  // the season currently shaded on the year chart
 
-      // The first and last day of this season, used for the shaded area
-      const seasonDates = daily.filter(day => day.season === season).map(day => day.date);
-      const start = seasonDates[0];
-      const end = seasonDates[seasonDates.length - 1];
+    // The season before (step -1) or after (step +1) a season. The seasons are a
+    // cycle, so the step after Kambarang wraps around to Birak.
+    function stepSeason(season, step) {
+      const i = page.seasons.indexOf(season);
+      return page.seasons[(i + step + page.seasons.length) % page.seasons.length];
+    }
+
+    // The first day of a season, and the day after its last day, so the
+    // shaded band covers the whole of its last day
+    function seasonRange(season) {
+      const dates = page.daily.filter(day => day.season === season).map(day => day.date);
+      const end = new Date(dates[dates.length - 1]);
+      end.setUTCDate(end.getUTCDate() + 1);
+      return [dates[0], end.toISOString().slice(0, 10)];
+    }
+
+    // Move the shaded band (and its label) to a season, and describe that season
+    function shadeSeason(season) {
+      shaded = season;
+      const [start, end] = seasonRange(season);
+      Plotly.relayout("year-chart", {
+        "shapes[0].x0": start,
+        "shapes[0].x1": end,
+        "shapes[0].fillcolor": page.colours[season].fill,
+        "annotations[0].x": start,
+        "annotations[0].text": `<b>${season}</b>`,
+      });
+
+      const row = page.summary.find(r => r.season === season);
+      document.querySelector("#shade-name").textContent = season;
+      document.querySelector("#shade-detail").textContent =
+        `${season}: average maximum ${oneDecimal(row.mean_max_temp)}°C, ` +
+        `average minimum ${oneDecimal(row.mean_min_temp)}°C, ` +
+        `total rainfall ${oneDecimal(row.total_rain)} mm.`;
+    }
+
+    // Previous / next season links at the bottom of the page
+    function showSeasonSteps(season) {
+      const prev = stepSeason(season, -1);
+      const next = stepSeason(season, 1);
+      const prevLink = document.querySelector("#prev-season");
+      const nextLink = document.querySelector("#next-season");
+      prevLink.textContent = `← ${prev}`;
+      prevLink.href = `/season/${prev}`;
+      nextLink.textContent = `${next} →`;
+      nextLink.href = `/season/${next}`;
+    }
+
+    function drawYearChart(daily) {
+      const dates = daily.map(day => day.date);
 
       const traces = [
         {
@@ -125,22 +184,29 @@
         // Temperature in the top panel, rainfall in the bottom panel
         yaxis: { title: { text: "Temperature (°C)" }, domain: [0.38, 1], gridcolor: "#E6DCCF" },
         yaxis2: { title: { text: "Rain (mm)" }, domain: [0, 0.28], gridcolor: "#E6DCCF" },
-        // Shade this season and label it
+        // The shaded band and its label. shadeSeason() sets where they go.
         shapes: [{
           type: "rect", xref: "x", yref: "paper",
-          x0: start, x1: end, y0: 0, y1: 1,
-          fillcolor: colour, opacity: 0.22, line: { width: 0 }, layer: "below",
+          x0: dates[0], x1: dates[0], y0: 0, y1: 1,
+          opacity: 0.22, line: { width: 0 }, layer: "below",
         }],
         annotations: [{
-          xref: "x", yref: "paper", x: start, y: 1.02,
+          xref: "x", yref: "paper", x: dates[0], y: 1.02,
           xanchor: "left", yanchor: "bottom",
-          text: `<b>${season}</b>`, showarrow: false,
+          text: "", showarrow: false,
         }],
       };
 
-      // staticPlot turns off all chart interaction (hovering, zooming, clicking the legend)
-      Plotly.newPlot("year-chart", traces, layout, { responsive: true });
+      // Hovering shows the exact values for each day
+      return Plotly.newPlot("year-chart", traces, layout, { responsive: true });
     }
+
+    document.querySelector("#shade-prev").addEventListener("click", () => {
+      if (shaded) shadeSeason(stepSeason(shaded, -1));
+    });
+    document.querySelector("#shade-next").addEventListener("click", () => {
+      if (shaded) shadeSeason(stepSeason(shaded, 1));
+    });
 
     Promise.all([
       getJSON("/api/summary"),
@@ -149,11 +215,18 @@
     ])
       .then(([summary, detail, year]) => {
         const season = detail.name;
-        const colour = colourBySeason(summary.summary)[season].fill;
+        page = {
+          daily: year.daily,
+          seasons: summary.seasons,
+          colours: colourBySeason(summary.summary),
+          summary: summary.summary,
+        };
 
-        showHeader(season, detail.info, colour);
+        showHeader(season, detail.info, page.colours[season].fill);
         fillSummaryTable(detail.stats, detail.events);
-        drawYearChart(year.daily, season, colour);
+        showSeasonSteps(season);
+        // Start with this page's season shaded
+        drawYearChart(year.daily).then(() => shadeSeason(season));
       })
       .catch(() => {
         document.querySelector("#title").textContent = "Season data unavailable";
