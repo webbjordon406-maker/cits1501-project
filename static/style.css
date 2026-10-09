@@ -104,18 +104,16 @@ td a {
 /* --- Charts --- */
 .chart { width: 100%; min-height: 420px; }
 
-/* --- Home page: introduction beside the season wheel --- */
-.hero {
-  display: grid;
-  grid-template-columns: 1fr 1.1fr;
-  gap: 3rem;
-  align-items: center;
-  padding: 3rem 0 2rem;
+/* --- Home page: introduction, then a large season wheel below it --- */
+.intro {
+  max-width: 46rem;   /* keep lines of text short enough to read comfortably */
+  padding-top: 3rem;
 }
 .intro p { margin: 0 0 1rem; }
 
 .wheel-wrap { text-align: center; }
-#wheel { width: 100%; max-width: 34rem; }
+.wheel-wrap h2 { font-size: 2rem; margin-bottom: 1rem; }
+#wheel { width: 100%; max-width: 52rem; }   /* most of the page width */
 
 .wedge path {
   stroke: white;
@@ -218,6 +216,7 @@ td a {
 @media (max-width: 800px) {
   main { padding: 0 1rem 3rem; }
   nav { padding: 1rem; }
-  .hero { grid-template-columns: 1fr; gap: 1.5rem; padding-top: 2rem; }
+  .intro { padding-top: 2rem; }
+  .wheel-wrap h2 { font-size: 1.6rem; }
   .season-header { padding-top: 2rem; }
 }

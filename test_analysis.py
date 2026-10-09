@@ -110,4 +110,4 @@ def test_matcher_with_no_data():
         analysis.closest_season(empty, 25, 0)
         assert False, "expected a ValueError"
     except ValueError:
-        pass
+        pass 
