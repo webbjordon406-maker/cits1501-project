@@ -1,13 +1,14 @@
 // Helpers shared by the home page and the season pages
 
-// Season colours, from darkest (coolest) to lightest (warmest)
-const GRADIENT = ["#933708", "#A95607", "#BE7505", "#D49504", "#EEAA0D", "#FFC40C"];
+// Season colours, from coolest (blue) to warmest (red). These reuse the colours
+// of the weather events chart, so blue always means cold and red always means hot.
+const GRADIENT = ["#2F5D73", "#6F97AE", "#8A9BA6", "#EEAA0D", "#B85A17", "#933708"];
 
-// Text colour for each step: white on the two dark colours, dark brown on the rest
-const TEXT_ON = ["#FFFFFF", "#FFFFFF", "#2B1606", "#2B1606", "#2B1606", "#2B1606"];
+// Text colour for each step: white on the dark colours, dark brown on the light ones
+const TEXT_ON = ["#FFFFFF", "#2B1606", "#2B1606", "#2B1606", "#FFFFFF", "#FFFFFF"];
 
 // Rank the seasons by mean max temperature and give each a colour:
-// the coolest season gets the darkest colour, the warmest the lightest.
+// the coolest season gets the darkest blue, the warmest the deepest red.
 function colourBySeason(summary) {
   const ranked = [...summary].sort((a, b) => a.mean_max_temp - b.mean_max_temp);
   const colours = {};

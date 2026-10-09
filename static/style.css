@@ -2,12 +2,12 @@
 
 /* Colours used throughout, so they can be changed in one place */
 :root {
-  --step-1: #933708;   /* season gradient, darkest (coolest) ... */
-  --step-2: #A95607;
-  --step-3: #BE7505;
-  --step-4: #D49504;
-  --step-5: #EEAA0D;
-  --step-6: #FFC40C;   /* ... to lightest (warmest) */
+  --step-1: #2F5D73;   /* season gradient, coolest (blue) ... */
+  --step-2: #6F97AE;
+  --step-3: #8A9BA6;
+  --step-4: #EEAA0D;
+  --step-5: #B85A17;
+  --step-6: #933708;   /* ... to warmest (red); same colours as seasons.js */
 
   --ink: #3B2410;      /* main text */
   --ink-soft: #6E5640; /* secondary text */
@@ -65,10 +65,10 @@ section { margin-top: 3.5rem; }
 .note {
   font-size: 0.9rem;
   color: var(--ink-soft);
-  border-left: 3px solid var(--step-5);
+  border-left: 3px solid var(--step-4);
   padding-left: 0.9rem;
 }
-#message { color: var(--step-1); font-weight: 700; }
+#message { color: var(--step-6); font-weight: 700; }   /* error messages in red */
 
 /* --- Tables --- */
 .table-scroll { overflow-x: auto; }  /* wide tables scroll on small screens */
@@ -111,9 +111,20 @@ td a {
 }
 .intro p { margin: 0 0 1rem; }
 
-.wheel-wrap { text-align: center; }
+/* Stack the heading, wheel and key in a column, centred on the page */
+.wheel-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
 .wheel-wrap h2 { font-size: 2rem; margin-bottom: 1rem; }
-#wheel { width: 100%; max-width: 52rem; }   /* most of the page width */
+#wheel {
+  display: block;
+  width: 100%;
+  max-width: 52rem;   /* most of the page width */
+  margin: 0 auto;
+}
 
 .wedge path {
   stroke: white;
@@ -190,7 +201,7 @@ td a {
   border-radius: 0.3rem;
   cursor: pointer;
 }
-.match-form button:hover { background: var(--step-2); }
+.match-form button:hover { opacity: 0.85; }
 
 .examples { color: var(--ink-soft); margin-top: 1.25rem; }
 .example {
